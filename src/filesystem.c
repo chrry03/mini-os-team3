@@ -1,5 +1,6 @@
 #include "filesystem.h"
 
+/* filesystem.h에서 선언했던 공통함수들 구현 */
 void init_filesystem(FileSystem* fs) {
     if (fs == NULL) return;
 
