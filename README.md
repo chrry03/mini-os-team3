@@ -64,7 +64,7 @@ mini-os-team3/
 #include "commands.h"
 ```
 
-6. 함수 형식은 `header/commands.h`에 선언된 형식을 따릅니다.(함수명 꼭 맞춰주세요!!!!!! 인자는 저거 바탕으로 더 추가해야하면 하시면 됩니다.)
+6. 함수 형식은 `header/commands.h`에 선언된 형식을 따릅니다.(함수명, 형식 꼭 맞춰주세요!!!!!! 인자는 만약 저거 바탕으로 더 추가해야하면 하시면 됩니다.)
 
 예시:
 
@@ -73,7 +73,7 @@ void command_ls(FileSystem* fs, int argc, char* argv[]);
 void command_cd(FileSystem* fs, int argc, char* argv[]);
 ```
 
-7. Visual Studio 전용 함수는 사용하지 않습니다.(주의)
+7. Visual Studio 전용 함수는 사용하지 않습니다.(주의!!!!!)
 
 ```c
 strcpy_s
@@ -91,6 +91,9 @@ scanf_s
 ```
 
 이렇게 작성했다면 실제 파일명도 반드시 `filesystem.h`여야 합니다.
+
+9. **제가 팀원들께 zip파일로 받아서 제 로컬에서 합쳐서 깃허브에 올리고, 깃허브에 최종합쳐진 코드를 mobaXterm으로 vm으로 옮겨서 테스트해보며 개발 완료할 예정입니다.**<br>
+한번에 최종코드 올리는게 아니라 계속 중간중간 vm으로 올리면서 테스트 해보며 개발할 예정이에요.
 
 ## 명령어 함수 작성 방식
 
@@ -171,7 +174,7 @@ git commit -m "feat: 커밋내용"
 git push origin 본인브랜치명
 ```
 
-**작업 끝나시면 PR 날리고 톡주세욤**
+**작업 끝나시면 PR 날리고 톡주세욤! 어떤거 구현한거 pr날렷다고**
 
 GitHub 사용이 어려운 경우:
 zip파일로 압축해서 팀장에게 전달해주세요.
@@ -185,7 +188,7 @@ zip파일로 압축해서 팀장에게 전달해주세요.
 └── README.txt
 ```
 
-개인 README에는 아래 내용을 적어주세요.
+개인 README에는 아래 내용을 적어주세요.(귀찮으면 안해도됨 걍 대충 톡으로 말로 알려주세욤)
 
 ```text
 담당자: 000
