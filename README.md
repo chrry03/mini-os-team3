@@ -21,7 +21,10 @@ mini-os-team3/
 │   ├── command_grep.c
 │   ├── command_chown.c
 │   ├── command_mv.c
-│   └── command_rm.c
+│   ├── command_rm.c
+│   ├── command_tree.c
+│   ├── command_touch.c
+│   └── command_find.c
 ├── header/
 │   ├── filesystem.h
 │   ├── fs_storage.h
@@ -46,9 +49,9 @@ mini-os-team3/
 ## 역할분담
 
 - **오채령**: 공통 트리 구조 설계, `main.c`, `Makefile`, `filesystem.h`, `filesystem.c`, `commands.h`, `fs_storage.h`, `fs_storage.c`, Azure VM 최종 배포, 코드 최종 통합, `command_pwd.c` 구현, 보고서 작성
-- **서예찬**: `command_ls.c`, `command_cd.c`, 추가 명령어 1개 구현, 보고서 작성
+- **서예찬**: `command_ls.c`, `command_cd.c`, `command_tree.c`, 보고서 작성
 - **노윤서**: `command_mkdir.c`, `command_cat.c` 구현, PPT 제작
-- **조용준**: `command_grep.c`, `command_chown.c` 구현, 보고서 작성
+- **조용준**: `command_grep.c`, `command_chown.c`, `command_touch.c`, `command_find.c` 구현, 보고서 작성
 - **정인하**: `command_mv.c`, `command_rm.c` 구현, 보고서 작성
 
 ## 개발 규칙
