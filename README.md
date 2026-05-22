@@ -45,13 +45,11 @@ mini-os-team3/
 
 ## 역할분담
 
-| 담당자 | 구현 및 담당 내용 |
-|---|---|
-| 오채령 | 공통 트리 구조 설계, `main.c`, `Makefile`, `filesystem.h`, `filesystem.c`, `commands.h`, `fs_storage.h`, `fs_storage.c`, Azure VM 최종 배포, 코드 최종 통합, `command_pwd.c` 구현, 보고서 작성 |
-| 서예찬 | `command_ls.c`, `command_cd.c`, 추가 명령어 1개 구현, 보고서 작성 |
-| 노윤서 | `command_mkdir.c`, `command_cat.c` 구현, PPT 제작 |
-| 조용준 | `command_grep.c`, `command_chown.c` 구현, 보고서 작성 |
-| 정인하 | `command_mv.c`, `command_rm.c` 구현, 보고서 작성 |
+- **오채령**: 공통 트리 구조 설계, `main.c`, `Makefile`, `filesystem.h`, `filesystem.c`, `commands.h`, `fs_storage.h`, `fs_storage.c`, Azure VM 최종 배포, 코드 최종 통합, `command_pwd.c` 구현, 보고서 작성
+- **서예찬**: `command_ls.c`, `command_cd.c`, 추가 명령어 1개 구현, 보고서 작성
+- **노윤서**: `command_mkdir.c`, `command_cat.c` 구현, PPT 제작
+- **조용준**: `command_grep.c`, `command_chown.c` 구현, 보고서 작성
+- **정인하**: `command_mv.c`, `command_rm.c` 구현, 보고서 작성
 
 ## 개발 규칙
 
@@ -113,8 +111,8 @@ void command_ls(FileSystem* fs, int argc, char* argv[]) {
 
 ## argc, argv 의미
 
-사용자가 입력한 명령어를 공백 기준으로 나눈 값입니다.
-argc = argument count : 인자의 개수
+사용자가 입력한 명령어를 공백 기준으로 나눈 값입니다.<br>
+argc = argument count : 인자의 개수<br>
 argv = argument vector : 인자들의 배열
 
 예시 1:
