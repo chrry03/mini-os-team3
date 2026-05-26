@@ -53,6 +53,7 @@ void command_mv(FileSystem* fs, int argc, char* argv[]) {
     // 3. 목적지 경로 해석 및 새 부모(target_parent) 설정
     Node* dest_node = resolve_path(fs, dest_path);
     Node* target_parent = NULL;
+    Node* overwrite_node = NULL;
     char new_name[NAME_SIZE] = {0};
 
     if (dest_node != NULL) {
@@ -60,24 +61,49 @@ void command_mv(FileSystem* fs, int argc, char* argv[]) {
         if (dest_node->type == NODE_DIR) {
             target_parent = dest_node;
             strncpy(new_name, src_node->name, NAME_SIZE - 1);
+            new_name[NAME_SIZE - 1] = '\0';
         } else {
-            printf("mv: '%s' already exists (overwrite is not supported)\n", dest_path);
-            pthread_mutex_unlock(&fs->lock);
-            return;
+            // 경우 B: 목적지가 이미 존재하는 파일인 경우 -> 파일 덮어쓰기 허용
+            if (src_node->type != NODE_FILE) {
+                printf("mv: cannot overwrite non-directory '%s' with directory '%s'\n", dest_path, src_path);
+                pthread_mutex_unlock(&fs->lock);
+                return;
+            }
+
+            target_parent = dest_node->parent;
+            overwrite_node = dest_node;
+
+            strncpy(new_name, dest_node->name, NAME_SIZE - 1);
+            new_name[NAME_SIZE - 1] = '\0';
         }
     } else {
-        // 경우 B: 목적지가 존재하지 않는 경로인 경우 -> 이름 변경(Rename) 또는 새 경로로 이동
+        // 경우 C: 목적지가 존재하지 않는 경로인 경우 -> 이름 변경(Rename) 또는 새 경로로 이동
         target_parent = resolve_parent_path(fs, dest_path, new_name);
         if (target_parent == NULL || target_parent->type != NODE_DIR) {
             printf("mv: cannot move to '%s': Invalid destination path\n", dest_path);
             pthread_mutex_unlock(&fs->lock);
             return;
         }
+        new_name[NAME_SIZE - 1] = '\0';
     }
 
     // 4. 중복 이름 체크
-    if (is_duplicate_name(target_parent, new_name)) {
-        printf("mv: cannot move: '%s' already exists in '%s'\n", new_name, target_parent->name);
+    Node* duplicate = find_child(target_parent, new_name);
+
+    if (duplicate != NULL && duplicate != src_node) {
+        if (duplicate->type == NODE_FILE && src_node->type == NODE_FILE) {
+            // 같은 이름의 기존 파일이 있으면 덮어쓰기 대상으로 지정
+            overwrite_node = duplicate;
+        } else {
+            // 디렉토리 덮어쓰기 또는 파일/디렉토리 타입 충돌은 안전상 허용하지 않음
+            printf("mv: cannot move: '%s' already exists in '%s'\n", new_name, target_parent->name);
+            pthread_mutex_unlock(&fs->lock);
+            return;
+        }
+    }
+
+    // 출발지와 덮어쓰기 대상이 같은 노드인 경우 이동할 필요가 없음
+    if (overwrite_node == src_node) {
         pthread_mutex_unlock(&fs->lock);
         return;
     }
@@ -93,12 +119,20 @@ void command_mv(FileSystem* fs, int argc, char* argv[]) {
         check = check->parent;
     }
 
+    // 5-1. 덮어쓰기 대상 파일이 있으면 기존 부모에서 연결 해제 후 메모리 해제
+    if (overwrite_node != NULL) {
+        remove_child(overwrite_node->parent, overwrite_node);
+        free_subtree(overwrite_node);
+    }
+
     // 6. 기존 부모 연결 해제 및 새 부모 노드에 등록 (트리 구조 갱신)
     remove_child(src_node->parent, src_node);
-    
+
     strncpy(src_node->name, new_name, NAME_SIZE - 1);
+    src_node->name[NAME_SIZE - 1] = '\0';
+
     add_child(target_parent, src_node);
-    
+
     // 7. 시간 설정 및 가상 파일 시스템 경로 최신화
     update_modified_time(src_node);
     update_modified_time(target_parent);
