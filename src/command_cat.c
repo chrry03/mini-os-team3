@@ -4,7 +4,7 @@
 #include "filesystem.h"
 #include "commands.h"
 
-#define CAT_BUFFER_SIZE 8192
+#define CAT_BUFFER_SIZE 8192 //ㅇㅇ
 
 static void print_file_content(Node* file) {
     if (file->content == NULL) {
