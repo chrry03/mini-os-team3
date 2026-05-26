@@ -222,6 +222,13 @@ int main(void) {
 
         if (fgets(input, sizeof(input), stdin) == NULL) {
             printf("\n");
+
+            if (save_filesystem(&fs, STORAGE_FILE) != 0) {
+                printf("storage: failed to save filesystem state\n");
+            } else {
+                printf("filesystem saved.\n");
+            }
+
             break;
         }
 
