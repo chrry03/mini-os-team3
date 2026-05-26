@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "filesystem.h"
 #include "commands.h"
 
 // 1. 따옴표를 제거해주는 헬퍼 함수 ("*dong*" -> *dong*)
@@ -20,6 +25,7 @@ static int match_pattern(const char* name, const char* pattern) {
     if (pattern[0] == '*' && pattern[strlen(pattern) - 1] == '*') {
         char temp_pattern[NAME_SIZE] = {0};
         strncpy(temp_pattern, pattern + 1, strlen(pattern) - 2);
+        temp_pattern[strlen(pattern) - 2] = '\0';
         return strstr(name, temp_pattern) != NULL;
     }
 
@@ -58,7 +64,7 @@ static void find_recursive(Node* current_node, const char* current_path, const c
 
     // -type 조건 검사
     if (target_type != -1) {
-        if (current_node->type != target_type) {
+        if (current_node->type != (NodeType)target_type) {
             type_match = 0;
         }
     }
@@ -73,13 +79,13 @@ static void find_recursive(Node* current_node, const char* current_path, const c
         Node* child = current_node->child;
         while (child != NULL) {
             char next_path[PATH_SIZE];
-            
+
             if (strcmp(current_path, "/") == 0) {
                 snprintf(next_path, PATH_SIZE, "/%s", child->name);
             } else {
                 snprintf(next_path, PATH_SIZE, "%s/%s", current_path, child->name);
             }
-            
+
             find_recursive(child, next_path, target_name, target_type);
             child = child->sibling;
         }
@@ -87,6 +93,11 @@ static void find_recursive(Node* current_node, const char* current_path, const c
 }
 
 void command_find(FileSystem* fs, int argc, char* argv[]) {
+    if (fs == NULL) {
+        printf("find: filesystem is not initialized\n");
+        return;
+    }
+
     if (argc < 2) {
         printf("Usage: find <path> [-name <filename>] [-type f|d]\n");
         return;
@@ -103,22 +114,22 @@ void command_find(FileSystem* fs, int argc, char* argv[]) {
         if (strcmp(argv[i], "-name") == 0 && i + 1 < argc) {
             target_name = argv[i + 1];
             strip_quotes(target_name); // 입력된 따옴표 제거 로직 추가
-            i += 2; 
-        } 
+            i += 2;
+        }
         else if (strcmp(argv[i], "-type") == 0 && i + 1 < argc) {
             if (strcmp(argv[i + 1], "f") == 0) {
                 target_type = NODE_FILE;
-            } 
+            }
             else if (strcmp(argv[i + 1], "d") == 0) {
                 target_type = NODE_DIR;
-            } 
+            }
             else {
                 printf("find: unknown argument to -type: %s\n", argv[i + 1]);
                 pthread_mutex_unlock(&fs->lock);
                 return;
             }
             i += 2;
-        } 
+        }
         else {
             printf("find: paths must precede expression: %s\n", argv[i]);
             pthread_mutex_unlock(&fs->lock);

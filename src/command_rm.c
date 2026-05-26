@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+
 #include "filesystem.h"
 #include "commands.h"
 

@@ -1,5 +1,11 @@
-#include "commands.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
+#include <pthread.h>
+
+#include "filesystem.h"
+#include "commands.h"
 
 // 대소문자 무시를 위한 문자열 소문자 변환 헬퍼 함수
 static void to_lowercase(char* str) {

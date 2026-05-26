@@ -1,64 +1,144 @@
+#include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "filesystem.h"
 #include "commands.h"
 
+#define VALID_USER_COUNT 4
+#define VALID_GROUP_COUNT 5
+
+static const char* VALID_USERS[VALID_USER_COUNT] = {
+    "root",
+    "user1",
+    "user2",
+    "user3"
+};
+
+static const char* VALID_GROUPS[VALID_GROUP_COUNT] = {
+    "root",
+    "user1",
+    "user2",
+    "user3",
+    "osgroup"
+};
+
+static int is_valid_user_name(const char* name) {
+    if (name == NULL || name[0] == '\0') {
+        return 0;
+    }
+
+    for (int i = 0; i < VALID_USER_COUNT; i++) {
+        if (strcmp(name, VALID_USERS[i]) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int is_valid_group_name(const char* name) {
+    if (name == NULL || name[0] == '\0') {
+        return 0;
+    }
+
+    for (int i = 0; i < VALID_GROUP_COUNT; i++) {
+        if (strcmp(name, VALID_GROUPS[i]) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 void command_chown(FileSystem* fs, int argc, char* argv[]) {
-    if (argc < 3) {
+    if (fs == NULL) {
+        printf("chown: filesystem is not initialized\n");
+        return;
+    }
+
+    if (argc != 3) {
         printf("Usage: chown [owner][:[group]] <target>\n");
         return;
     }
 
     pthread_mutex_lock(&fs->lock);
 
-    // argv[1]은 "u1", "u1.g1", ".g1" 등의 문자열
-    // argv[2]는 대상 파일이나 디렉토리
-    char* ug_str = argv[1]; 
-    char* target_path = argv[2]; 
+    char ug_buffer[OWNER_SIZE * 2];
+    char owner[OWNER_SIZE] = {0};
+    char group[OWNER_SIZE] = {0};
+
+    strncpy(ug_buffer, argv[1], sizeof(ug_buffer) - 1);
+    ug_buffer[sizeof(ug_buffer) - 1] = '\0';
+
+    char* target_path = argv[2];
 
     Node* target = resolve_path(fs, target_path);
-    if (!target) {
-        printf("Wrong Directory or File\n"); // 예시 코드와 동일한 에러 메시지
+
+    if (target == NULL) {
+        printf("chown: cannot access '%s': No such file or directory\n", target_path);
         pthread_mutex_unlock(&fs->lock);
         return;
     }
 
-    // 권한 확인 로직은 일단 제외 (필요시 Check_Permission 관련 로직 추가)
+    if (ug_buffer[0] == ':' || ug_buffer[0] == '.') {
+        strncpy(group, ug_buffer + 1, OWNER_SIZE - 1);
+        group[OWNER_SIZE - 1] = '\0';
 
-    char owner[OWNER_SIZE] = {0};
-    char group[OWNER_SIZE] = {0};
+        if (!is_valid_group_name(group)) {
+            printf("chown: invalid group: %s\n", group);
+            pthread_mutex_unlock(&fs->lock);
+            return;
+        }
+    } else {
+        char* sep = strchr(ug_buffer, ':');
 
-    // 1. ".[group]" 또는 ":[group]" 형태 (그룹만 변경)
-    if (ug_str[0] == '.' || ug_str[0] == ':') {
-        printf("Change only Group\n\n");
-        strncpy(group, ug_str + 1, OWNER_SIZE - 1);
-    } 
-    // 2. "[owner].[group]" 또는 "[owner]" 형태
-    else {
-        // 구분자가 있는지 찾음 (':' 또는 '.')
-        char* sep = strchr(ug_str, ':');
-        if (!sep) sep = strchr(ug_str, '.');
+        if (sep == NULL) {
+            sep = strchr(ug_buffer, '.');
+        }
 
         if (sep != NULL) {
-            // 구분자가 있으면 소유자와 그룹 모두 변경
-            printf("Change User and Group\n\n");
-            *sep = '\0'; // 문자열을 두 개로 쪼갬
-            strncpy(owner, ug_str, OWNER_SIZE - 1);
+            *sep = '\0';
+
+            strncpy(owner, ug_buffer, OWNER_SIZE - 1);
+            owner[OWNER_SIZE - 1] = '\0';
+
             strncpy(group, sep + 1, OWNER_SIZE - 1);
+            group[OWNER_SIZE - 1] = '\0';
+
+            if (!is_valid_user_name(owner)) {
+                printf("chown: invalid user: %s\n", owner);
+                pthread_mutex_unlock(&fs->lock);
+                return;
+            }
+
+            if (!is_valid_group_name(group)) {
+                printf("chown: invalid group: %s\n", group);
+                pthread_mutex_unlock(&fs->lock);
+                return;
+            }
         } else {
-            // 구분자가 없으면 소유자만 변경
-            printf("Change only User\n\n");
-            strncpy(owner, ug_str, OWNER_SIZE - 1);
+            strncpy(owner, ug_buffer, OWNER_SIZE - 1);
+            owner[OWNER_SIZE - 1] = '\0';
+
+            if (!is_valid_user_name(owner)) {
+                printf("chown: invalid user: %s\n", owner);
+                pthread_mutex_unlock(&fs->lock);
+                return;
+            }
         }
     }
 
-    // 3. 분리해낸 문자열을 실제 노드에 적용
-    if (strlen(owner) > 0) {
+    if (owner[0] != '\0') {
         strncpy(target->owner, owner, OWNER_SIZE - 1);
         target->owner[OWNER_SIZE - 1] = '\0';
     }
-    if (strlen(group) > 0) {
+
+    if (group[0] != '\0') {
         strncpy(target->group, group, OWNER_SIZE - 1);
         target->group[OWNER_SIZE - 1] = '\0';
     }
-    
+
     update_modified_time(target);
 
     pthread_mutex_unlock(&fs->lock);

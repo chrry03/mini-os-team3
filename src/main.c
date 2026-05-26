@@ -10,11 +10,13 @@
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARG_COUNT 64
 #define MAX_USER_NAME 64
-#define USER_COUNT 2
+#define USER_COUNT 4
 
 static const char* VALID_USERS[USER_COUNT] = {
     "root",
-    "osmanager"
+    "user1",
+    "user2",
+    "user3"
 };
 
 static void trim_newline(char* str) {
@@ -220,6 +222,13 @@ int main(void) {
 
         if (fgets(input, sizeof(input), stdin) == NULL) {
             printf("\n");
+
+            if (save_filesystem(&fs, STORAGE_FILE) != 0) {
+                printf("storage: failed to save filesystem state\n");
+            } else {
+                printf("filesystem saved.\n");
+            }
+
             break;
         }
 
