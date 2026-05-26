@@ -368,4 +368,4 @@ int load_filesystem(FileSystem* fs, const char* filename) {
     update_current_path(fs);
 
     return 0;
-}
+} //depth, type, name, owner, group, permission, size, created_at, modified_at, content 저장
