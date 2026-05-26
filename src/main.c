@@ -10,11 +10,13 @@
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARG_COUNT 64
 #define MAX_USER_NAME 64
-#define USER_COUNT 2
+#define USER_COUNT 4
 
 static const char* VALID_USERS[USER_COUNT] = {
     "root",
-    "osmanager"
+    "user1",
+    "user2",
+    "user3"
 };
 
 static void trim_newline(char* str) {

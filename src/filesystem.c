@@ -40,7 +40,7 @@ Node* create_node(const char* name, NodeType type) {
     node->content = NULL;
     node->size = 0;
 
-    strncpy(node->owner, "osmanager", OWNER_SIZE - 1);
+    strncpy(node->owner, "root", OWNER_SIZE - 1);
     node->owner[OWNER_SIZE - 1] = '\0';
 
     strncpy(node->group, "osgroup", OWNER_SIZE - 1);
