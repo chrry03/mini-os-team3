@@ -4,7 +4,7 @@
 #include "filesystem.h"
 
 /* 공통 필수 명령어 */
-void command_pwd(FileSystem* fs);
+void command_pwd(FileSystem* fs, int argc, char* argv[]);
 void command_ls(FileSystem* fs, int argc, char* argv[]);
 void command_cd(FileSystem* fs, int argc, char* argv[]);
 void command_mkdir(FileSystem* fs, int argc, char* argv[]);
