@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "filesystem.h"
 #include "commands.h"
 
 // 1. 따옴표를 제거해주는 헬퍼 함수 ("*dong*" -> *dong*)

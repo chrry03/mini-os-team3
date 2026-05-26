@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "filesystem.h"
 #include "commands.h"
 
 void command_chown(FileSystem* fs, int argc, char* argv[]) {

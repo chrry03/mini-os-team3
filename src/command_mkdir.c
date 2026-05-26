@@ -5,7 +5,7 @@
 #include "filesystem.h"
 #include "commands.h"
 
-static void create_directory_normal(FileSystem* fs, const char* path) { //dd
+static void create_directory_normal(FileSystem* fs, const char* path) {
     char basename[NAME_SIZE];
 
     Node* parent = resolve_parent_path(fs, path, basename);
