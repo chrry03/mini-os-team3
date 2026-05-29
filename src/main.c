@@ -85,6 +85,68 @@ static int login_user(char* current_user, int size) {
     }
 }
 
+static Node* ensure_child_directory(Node* parent, const char* dirname) {
+    if (parent == NULL || dirname == NULL) {
+        return NULL;
+    }
+
+    Node* child = find_child(parent, (char*)dirname);
+
+    if (child != NULL) {
+        if (child->type != NODE_DIR) {
+            return NULL;
+        }
+
+        return child;
+    }
+
+    Node* new_dir = create_node((char*)dirname, NODE_DIR);
+
+    if (new_dir == NULL) {
+        return NULL;
+    }
+
+    add_child(parent, new_dir);
+
+    return new_dir;
+}
+
+static int move_to_user_home(FileSystem* fs, const char* current_user) {
+    if (fs == NULL || fs->root == NULL || current_user == NULL) {
+        return 0;
+    }
+
+    Node* home_dir = NULL;
+
+    if (strcmp(current_user, "root") == 0) {
+        home_dir = ensure_child_directory(fs->root, "root");
+
+        if (home_dir == NULL) {
+            printf("login: failed to prepare home directory for root\n");
+            return 0;
+        }
+    } else {
+        Node* home_parent = ensure_child_directory(fs->root, "home");
+
+        if (home_parent == NULL) {
+            printf("login: failed to prepare /home directory\n");
+            return 0;
+        }
+
+        home_dir = ensure_child_directory(home_parent, current_user);
+
+        if (home_dir == NULL) {
+            printf("login: failed to prepare home directory for %s\n", current_user);
+            return 0;
+        }
+    }
+
+    fs->current = home_dir;
+    update_current_path(fs);
+
+    return 1;
+}
+
 static int parse_input(char* input, char* argv[], int max_args) {
     int argc = 0;
     char* p = input;
@@ -212,6 +274,15 @@ int main(void) {
     if (!login_user(current_user, sizeof(current_user))) {
         destroy_filesystem(&fs);
         return 0;
+    }
+
+    if (!move_to_user_home(&fs, current_user)) {
+        destroy_filesystem(&fs);
+        return 0;
+    }
+
+    if (save_filesystem(&fs, STORAGE_FILE) != 0) {
+        printf("storage: warning: failed to save filesystem state\n");
     }
 
     printf("Login successful.\n");
