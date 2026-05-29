@@ -3,6 +3,8 @@
 #include "commands.h"
 
 void command_pwd(FileSystem* fs, int argc, char* argv[]) {
+    (void)argv;
+
     if (fs == NULL) {
         printf("pwd: filesystem is not initialized\n");
         return;
