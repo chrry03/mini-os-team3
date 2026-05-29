@@ -65,12 +65,6 @@ static void print_long_info(Node* node, const char* display_name)
     make_time_string(node->modified_at, time_buffer, sizeof(time_buffer));
 
     printf("%s 1 %-10s %-10s %6d %s %s",permission,node->owner,node->group,node->size,time_buffer,display_name);
-
-    if (node->type == NODE_DIR) 
-    {
-        printf("/");
-    }
-
     printf("\n");
 }
 
