@@ -197,7 +197,64 @@ static int parse_input(char* input, char* argv[], int max_args) {
     return argc;
 }
 
+static void get_home_path(const char* current_user, char* home_path, int size) {
+    if (home_path == NULL || size <= 0) {
+        return;
+    }
+
+    home_path[0] = '\0';
+
+    if (current_user == NULL || current_user[0] == '\0') {
+        return;
+    }
+
+    if (strcmp(current_user, "root") == 0) {
+        strncpy(home_path, "/root", size - 1);
+        home_path[size - 1] = '\0';
+    } else {
+        snprintf(home_path, size, "/home/%s", current_user);
+    }
+}
+
+static void make_display_path(const char* current_path, const char* current_user, char* display_path, int size) {
+    char home_path[PATH_SIZE];
+
+    if (display_path == NULL || size <= 0) {
+        return;
+    }
+
+    display_path[0] = '\0';
+
+    if (current_path == NULL || current_path[0] == '\0') {
+        strncpy(display_path, "/", size - 1);
+        display_path[size - 1] = '\0';
+        return;
+    }
+
+    get_home_path(current_user, home_path, sizeof(home_path));
+
+    if (home_path[0] != '\0') {
+        int home_len = (int)strlen(home_path);
+
+        if (strcmp(current_path, home_path) == 0) {
+            strncpy(display_path, "~", size - 1);
+            display_path[size - 1] = '\0';
+            return;
+        }
+
+        if (strncmp(current_path, home_path, home_len) == 0 && current_path[home_len] == '/') {
+            snprintf(display_path, size, "~%s", current_path + home_len);
+            return;
+        }
+    }
+
+    strncpy(display_path, current_path, size - 1);
+    display_path[size - 1] = '\0';
+}
+
 static void print_prompt(FileSystem* fs, const char* current_user) {
+    char display_path[PATH_SIZE];
+
     if (fs == NULL || fs->current == NULL) {
         printf("mini_os> ");
         fflush(stdout);
@@ -205,11 +262,12 @@ static void print_prompt(FileSystem* fs, const char* current_user) {
     }
 
     update_current_path(fs);
+    make_display_path(fs->current_path, current_user, display_path, sizeof(display_path));
 
     if (current_user == NULL || current_user[0] == '\0') {
-        printf("mini_os:%s> ", fs->current_path);
+        printf("mini_os:%s> ", display_path);
     } else {
-        printf("%s@mini-os:%s> ", current_user, fs->current_path);
+        printf("%s@mini-os:%s> ", current_user, display_path);
     }
 
     fflush(stdout);
