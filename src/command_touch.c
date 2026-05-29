@@ -7,49 +7,34 @@
 void command_touch(FileSystem* fs, int argc, char* argv[]) {
     // 인자가 부족한 경우 예외 처리
     if (argc < 2) {
-        printf("Usage: touch <filename> [filename...]\n");
-        return;
-    }
-
-    if (fs == NULL) {
-        printf("touch: filesystem is not initialized\n");
+        printf("Usage: touch <filename>\n");
         return;
     }
 
     pthread_mutex_lock(&fs->lock); // 스레드 안전성 확보
 
-    // 여러 개의 파일명이 들어온 경우 각각 생성/수정 처리
-    for (int i = 1; i < argc; i++) {
-        char basename[NAME_SIZE];
+    char basename[NAME_SIZE];
+    // 상위 디렉토리 노드와 생성/수정할 파일의 이름을 분리
+    Node* parent = resolve_parent_path(fs, argv[1], basename);
 
-        // 상위 디렉토리 노드와 생성/수정할 파일의 이름을 분리
-        Node* parent = resolve_parent_path(fs, argv[i], basename);
+    // 부모 경로가 유효하지 않으면 에러 출력
+    if (!parent) {
+        printf("touch: cannot touch '%s': No such file or directory\n", argv[1]);
+        pthread_mutex_unlock(&fs->lock);
+        return;
+    }
 
-        // 부모 경로가 유효하지 않으면 에러 출력
-        if (!parent) {
-            printf("touch: cannot touch '%s': No such file or directory\n", argv[i]);
-            continue;
-        }
+    // 부모 디렉토리 안에 동일한 이름의 자식 노드가 있는지 탐색
+    Node* target = find_child(parent, basename);
 
-        if (parent->type != NODE_DIR) {
-            printf("touch: cannot touch '%s': Not a directory\n", argv[i]);
-            continue;
-        }
-
-        // 부모 디렉토리 안에 동일한 이름의 자식 노드가 있는지 탐색
-        Node* target = find_child(parent, basename);
-
-        if (target) {
-            // 1. 이미 존재하면 최종 수정 시간만 업데이트
-            update_modified_time(target);
-        } else {
-            // 2. 존재하지 않으면 새 파일 노드 생성 및 연결
-            Node* new_file = create_node(basename, NODE_FILE);
-            if (new_file) {
-                add_child(parent, new_file); // 부모-자식 트리 구조로 연결
-            } else {
-                printf("touch: failed to create '%s'\n", argv[i]);
-            }
+    if (target) {
+        // 1. 이미 존재하면 최종 수정 시간만 업데이트
+        update_modified_time(target);
+    } else {
+        // 2. 존재하지 않으면 새 파일 노드 생성 및 연결
+        Node* new_file = create_node(basename, NODE_FILE);
+        if (new_file) {
+            add_child(parent, new_file); // 부모-자식 트리 구조로 연결
         }
     }
 
