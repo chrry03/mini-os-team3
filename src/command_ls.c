@@ -24,26 +24,19 @@ static void make_time_string(time_t target_time, char* buffer, int buffer_size)
 
     strftime(buffer, buffer_size, "%Y-%m-%d %H:%M", time_info);
 }
-
-static void print_simple_name(Node* node, const char* display_name) 
+static void print_simple_name(Node* node, const char* display_name)
 {
-    if (node == NULL) 
+    if (node == NULL)
     {
         return;
     }
 
-    if (display_name == NULL) 
+    if (display_name == NULL)
     {
         display_name = node->name;
     }
 
-    if (node->type == NODE_DIR) 
-    {
-        printf("%s/\n", display_name);
-    } else 
-    {
-        printf("%s\n", display_name);
-    }
+    printf("%s\n", display_name);
 }
 
 static void print_long_info(Node* node, const char* display_name) 
