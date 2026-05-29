@@ -16,7 +16,8 @@ static int parse_tree_option(const char* option, int* show_all)
 
     for (i = 1; option[i] != '\0'; i++) 
     {
-        if (option[i] == 'a') {
+        if (option[i] == 'a') 
+        {
             *show_all = 1;
         } 
         else 
@@ -30,7 +31,7 @@ static int parse_tree_option(const char* option, int* show_all)
 }
 
 static int should_print(Node* node, int show_all)
- {
+{
     if (node == NULL) 
     {
         return 0;
@@ -54,7 +55,7 @@ static int has_next_printable(Node* node, int show_all)
     Node* cur;
 
     if (node == NULL)
-     {
+    {
         return 0;
     }
 
@@ -73,7 +74,7 @@ static int has_next_printable(Node* node, int show_all)
     return 0;
 }
 
-static void print_tree_recursive(Node* node,const char* prefix, int is_last, int show_all, int* dir_count, int* file_count)
+static void print_tree_recursive(Node* node, const char* prefix, int is_last, int show_all, int* dir_count, int* file_count)
 {
     Node* child;
     char next_prefix[PATH_SIZE];
@@ -88,7 +89,9 @@ static void print_tree_recursive(Node* node,const char* prefix, int is_last, int
     if (is_last) 
     {
         printf("`-- ");
-    } else {
+    } 
+    else 
+    {
         printf("|-- ");
     }
 
@@ -98,7 +101,9 @@ static void print_tree_recursive(Node* node,const char* prefix, int is_last, int
     {
         printf("/");
         (*dir_count)++;
-    } else {
+    } 
+    else 
+    {
         (*file_count)++;
     }
 
@@ -112,7 +117,8 @@ static void print_tree_recursive(Node* node,const char* prefix, int is_last, int
     if (is_last) 
     {
         snprintf(next_prefix, sizeof(next_prefix), "%s    ", prefix);
-    } else 
+    } 
+    else 
     {
         snprintf(next_prefix, sizeof(next_prefix), "%s|   ", prefix);
     }
@@ -123,14 +129,14 @@ static void print_tree_recursive(Node* node,const char* prefix, int is_last, int
     {
         if (should_print(child, show_all)) 
         {
-            print_tree_recursive(child,next_prefix,!has_next_printable(child, show_all),show_all,dir_count, file_count);
+            print_tree_recursive(child, next_prefix, !has_next_printable(child, show_all), show_all, dir_count, file_count);
         }
 
         child = child->sibling;
     }
 }
 
-static void print_tree(FileSystem* fs,const char* path,int show_all) 
+static void print_tree(FileSystem* fs, const char* path, int show_all) 
 {
     Node* target;
     Node* child;
@@ -158,16 +164,30 @@ static void print_tree(FileSystem* fs,const char* path,int show_all)
     }
 
     if (target->type == NODE_FILE)
-     {
-        printf("%s\n", target->name);
+    {
+        if (path == NULL)
+        {
+            printf("%s\n", target->name);
+        }
+        else
+        {
+            printf("%s\n", path);
+        }
+
         printf("\n0 directories, 1 file\n");
         return;
     }
 
-    if (target == fs->root) 
+    if (path == NULL)
+    {
+        printf(".\n");
+    }
+    else if (target == fs->root) 
     {
         printf("/\n");
-    } else {
+    } 
+    else 
+    {
         printf("%s/\n", target->name);
     }
 
@@ -183,7 +203,7 @@ static void print_tree(FileSystem* fs,const char* path,int show_all)
         child = child->sibling;
     }
 
-    printf("\n%d directories, %d files\n",dir_count,file_count);
+    printf("\n%d directories, %d files\n", dir_count, file_count);
 }
 
 void command_tree(FileSystem* fs, int argc, char* argv[]) 
