@@ -1,5 +1,25 @@
 #include "filesystem.h"
 
+static char current_owner[OWNER_SIZE] = "root";
+static char current_group[OWNER_SIZE] = "root";
+
+void set_current_user(const char* username) {
+    if (username == NULL || username[0] == '\0') {
+        strncpy(current_owner, "root", OWNER_SIZE - 1);
+        current_owner[OWNER_SIZE - 1] = '\0';
+
+        strncpy(current_group, "root", OWNER_SIZE - 1);
+        current_group[OWNER_SIZE - 1] = '\0';
+        return;
+    }
+
+    strncpy(current_owner, username, OWNER_SIZE - 1);
+    current_owner[OWNER_SIZE - 1] = '\0';
+
+    strncpy(current_group, username, OWNER_SIZE - 1);
+    current_group[OWNER_SIZE - 1] = '\0';
+}
+
 /* filesystem.h에서 선언했던 공통함수들 구현 */
 void init_filesystem(FileSystem* fs) {
     if (fs == NULL) return;
@@ -40,10 +60,10 @@ Node* create_node(const char* name, NodeType type) {
     node->content = NULL;
     node->size = 0;
 
-    strncpy(node->owner, "root", OWNER_SIZE - 1);
+    strncpy(node->owner, current_owner, OWNER_SIZE - 1);
     node->owner[OWNER_SIZE - 1] = '\0';
 
-    strncpy(node->group, "osgroup", OWNER_SIZE - 1);
+    strncpy(node->group, current_group, OWNER_SIZE - 1);
     node->group[OWNER_SIZE - 1] = '\0';
 
     node->permission = (type == NODE_DIR) ? 755 : 644;

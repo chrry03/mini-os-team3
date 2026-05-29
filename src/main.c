@@ -334,6 +334,8 @@ int main(void) {
         return 0;
     }
 
+    set_current_user(current_user);
+
     if (!move_to_user_home(&fs, current_user)) {
         destroy_filesystem(&fs);
         return 0;

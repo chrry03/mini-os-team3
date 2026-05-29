@@ -58,6 +58,7 @@ void destroy_filesystem(FileSystem* fs); //프로그램 종료시 메모리 정�
 
 /* 노드 생성, 연결, 탐색, 삭제 관련 함수 */
 Node* create_node(const char* name, NodeType type); //새파일, 폴더 노드를 만드는 함수
+void set_current_user(const char* username);
 void add_child(Node* parent, Node* child); //부모 폴더 안에 자식 노드 추가
 Node* find_child(Node* parent, const char* name); //부모 폴더 안에서 특정이름의 자식을 찾는 함수
 void remove_child(Node* parent, Node* target); //부모 폴더에서 특정 자식 노드를 연결 해제하는 함수
