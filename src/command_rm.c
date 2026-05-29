@@ -45,9 +45,7 @@ void command_rm(FileSystem* fs, int argc, char* argv[]) {
 
     // 루트 디렉토리 삭제 제한
     if (strcmp(target_path, "/") == 0) {
-        if (option_f != 1) {
-            printf("rm: it is dangerous to operate recursively on '/'\n");
-        }
+        printf("rm: refusing to remove root directory '/'\n");
         return;
     }
 
@@ -64,13 +62,18 @@ void command_rm(FileSystem* fs, int argc, char* argv[]) {
         return;
     }
 
+    // 루트 디렉토리 삭제 제한
+    if (target == fs->root) {
+        printf("rm: refusing to remove root directory '/'\n");
+        pthread_mutex_unlock(&fs->lock);
+        return;
+    }
+
     // 3. 현재 위치 또는 상위 디렉토리 삭제 방지 검사
     Node* check = fs->current;
     while (check != NULL) {
         if (check == target) {
-            if (option_f != 1) {
-                printf("rm: cannot remove current working directory or its parent\n");
-            }
+            printf("rm: cannot remove current working directory or its parent\n");
             pthread_mutex_unlock(&fs->lock);
             return;
         }
@@ -100,6 +103,7 @@ void command_rm(FileSystem* fs, int argc, char* argv[]) {
     free_subtree(target);
 
     // 6. 상태 최신화 및 락 해제
+    update_modified_time(parent);
     update_current_path(fs);
     pthread_mutex_unlock(&fs->lock);
 }
