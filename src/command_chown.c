@@ -5,14 +5,15 @@
 #include "filesystem.h"
 #include "commands.h"
 
-#define VALID_USER_COUNT 4
+#define VALID_USER_COUNT 5
 #define VALID_GROUP_COUNT 5
 
 static const char* VALID_USERS[VALID_USER_COUNT] = {
     "root",
     "user1",
     "user2",
-    "user3"
+    "user3",
+    "osmanager"
 };
 
 static const char* VALID_GROUPS[VALID_GROUP_COUNT] = {
@@ -20,7 +21,7 @@ static const char* VALID_GROUPS[VALID_GROUP_COUNT] = {
     "user1",
     "user2",
     "user3",
-    "osgroup"
+    "osmanager"
 };
 
 static int is_valid_user_name(const char* name) {
