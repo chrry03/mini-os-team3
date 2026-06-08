@@ -68,27 +68,43 @@ static void cat_read_file(FileSystem* fs, const char* path, int line_number_opti
 
 static void cat_write_file(FileSystem* fs, const char* path) {
     char basename[NAME_SIZE];
-    Node* parent = resolve_parent_path(fs, path, basename);
+    Node* parent;
+    Node* file;
+    char buffer[CAT_BUFFER_SIZE];
+    char line[1024];
+
+    if (fs == NULL || path == NULL) {
+        printf("cat: filesystem error\n");
+        return;
+    }
+
+    pthread_mutex_lock(&fs->lock);
+
+    parent = resolve_parent_path(fs, path, basename);
 
     if (parent == NULL) {
         printf("cat: %s: No such directory\n", path);
+        pthread_mutex_unlock(&fs->lock);
         return;
     }
 
     if (!is_directory(parent)) {
         printf("cat: %s: Parent is not a directory\n", path);
+        pthread_mutex_unlock(&fs->lock);
         return;
     }
 
     if (strlen(basename) == 0) {
         printf("cat: invalid file name\n");
+        pthread_mutex_unlock(&fs->lock);
         return;
     }
 
-    Node* file = find_child(parent, basename);
+    file = find_child(parent, basename);
 
     if (file != NULL && !is_file(file)) {
         printf("cat: %s: Is a directory\n", path);
+        pthread_mutex_unlock(&fs->lock);
         return;
     }
 
@@ -96,6 +112,7 @@ static void cat_write_file(FileSystem* fs, const char* path) {
         file = create_node(basename, NODE_FILE);
         if (file == NULL) {
             printf("cat: failed to create file '%s'\n", path);
+            pthread_mutex_unlock(&fs->lock);
             return;
         }
 
@@ -103,19 +120,13 @@ static void cat_write_file(FileSystem* fs, const char* path) {
         update_modified_time(parent);
     }
 
-    char buffer[CAT_BUFFER_SIZE];
-    char line[1024];
+    pthread_mutex_unlock(&fs->lock);
 
     buffer[0] = '\0';
 
-    printf("Enter file content. Type EOF or . on a single line to finish.\n");
+    printf("Enter file content. Press Ctrl+D to finish.\n");
 
     while (fgets(line, sizeof(line), stdin) != NULL) {
-        if (strcmp(line, "EOF\n") == 0 || strcmp(line, ".\n") == 0 ||
-            strcmp(line, "EOF") == 0 || strcmp(line, ".") == 0) {
-            break;
-        }
-
         if (strlen(buffer) + strlen(line) >= CAT_BUFFER_SIZE - 1) {
             printf("cat: content is too large. Input stopped.\n");
             break;
@@ -123,6 +134,8 @@ static void cat_write_file(FileSystem* fs, const char* path) {
 
         strcat(buffer, line);
     }
+
+    clearerr(stdin);
 
     pthread_mutex_lock(&fs->lock);
 
